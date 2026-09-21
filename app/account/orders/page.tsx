@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function Orders(){return <main className="min-h-screen bg-[#eee8dc] px-5 py-16 md:px-12"><Link href="/account" className="text-xs uppercase tracking-[.2em]">← Account</Link><h1 className="serif mt-16 text-5xl">Your orders</h1><div className="mt-10 border border-black/10 bg-white/50 p-8"><p className="text-sm text-black/55">No live order history is available yet. Your orders will appear here after database and authentication setup.</p></div></main>}
