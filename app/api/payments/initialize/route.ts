@@ -1,12 +1,14 @@
+import crypto from "crypto";
 import {NextResponse} from "next/server";
+
 export async function POST(request:Request){
  const secret=process.env.PAYSTACK_SECRET_KEY;
- if(!secret) return NextResponse.json({error:"Payment service is not configured."},{status:503});
- const body=await request.json().catch(()=>null) as {email?:unknown,amount?:unknown,reference?:unknown}|null;
- if(typeof body?.email!=="string"||typeof body.amount!=="number"||body.amount<=0||typeof body.reference!=="string")
-  return NextResponse.json({error:"Invalid payment initialization request."},{status:400});
- const response=await fetch("https://api.paystack.co/transaction/initialize",{method:"POST",headers:{Authorization:`Bearer ${secret}`, "Content-Type":"application/json"},body:JSON.stringify({email:body.email,amount:Math.round(body.amount*100),reference:body.reference})});
- const data=await response.json();
- if(!response.ok||!data.status) return NextResponse.json({error:"Unable to initialize payment."},{status:502});
- return NextResponse.json({ok:true,data:data.data});
+ const dbReady=!!process.env.NEXT_PUBLIC_SUPABASE_URL&&!!process.env.SUPABASE_SERVICE_ROLE_KEY;
+ if(!secret||!dbReady) return NextResponse.json({error:"Payment service is not ready for production orders."},{status:503});
+ const body=await request.json().catch(()=>null) as {orderId?:unknown,email?:unknown}|null;
+ if(typeof body?.orderId!=="string"||!crypto.randomUUID||typeof body.email!=="string"||!/^\S+@\S+\.\S+$/.test(body.email))
+  return NextResponse.json({error:"A valid order ID and email are required."},{status:400});
+ // The production implementation must load the order total from Supabase here.
+ // Never accept amount or payment reference from the browser.
+ return NextResponse.json({error:"Payment initialization is awaiting live order persistence."},{status:503});
 }
